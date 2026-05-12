@@ -1,11 +1,11 @@
 name: Build & Test All Platforms
-
+ 
 on:
   push:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
-
+ 
 jobs:
   test:
     name: Common Tests (JVM)
@@ -17,14 +17,14 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
       - uses: gradle/actions/setup-gradle@v4
-      - run: chmod +x gradlew
+      - run: sed -i 's/\r//' gradlew && chmod +x gradlew
       - run: ./gradlew :composeApp:desktopTest --no-daemon
       - if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-results
           path: composeApp/build/reports/tests/
-
+ 
   android:
     name: Android APK
     runs-on: ubuntu-latest
@@ -35,14 +35,14 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
       - uses: gradle/actions/setup-gradle@v4
-      - run: chmod +x gradlew
+      - run: sed -i 's/\r//' gradlew && chmod +x gradlew
       - run: ./gradlew :composeApp:assembleDebug --no-daemon
       - run: ./gradlew :composeApp:testDebugUnitTest --no-daemon
       - uses: actions/upload-artifact@v4
         with:
           name: android-apk
           path: composeApp/build/outputs/apk/debug/*.apk
-
+ 
   desktop:
     name: Desktop (Linux) Build
     runs-on: ubuntu-latest
@@ -53,13 +53,13 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
       - uses: gradle/actions/setup-gradle@v4
-      - run: chmod +x gradlew
+      - run: sed -i 's/\r//' gradlew && chmod +x gradlew
       - run: ./gradlew :composeApp:packageReleaseUberJarForCurrentOS --no-daemon
       - uses: actions/upload-artifact@v4
         with:
           name: desktop-jar
           path: composeApp/build/compose/jars/*.jar
-
+ 
   web:
     name: Web (WasmJS) Build
     runs-on: ubuntu-latest
@@ -70,13 +70,13 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
       - uses: gradle/actions/setup-gradle@v4
-      - run: chmod +x gradlew
+      - run: sed -i 's/\r//' gradlew && chmod +x gradlew
       - run: ./gradlew :composeApp:wasmJsBrowserDistribution --no-daemon
       - uses: actions/upload-artifact@v4
         with:
           name: web-distribution
           path: composeApp/build/dist/wasmJs/productionExecutable/
-
+ 
   ios:
     name: iOS Framework Build
     runs-on: macos-latest
@@ -87,7 +87,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
       - uses: gradle/actions/setup-gradle@v4
-      - run: chmod +x gradlew
+      - run: sed -i 's/\r//' gradlew && chmod +x gradlew
       - run: ./gradlew :composeApp:linkDebugFrameworkIosSimulatorArm64 --no-daemon
       - uses: actions/upload-artifact@v4
         with:
