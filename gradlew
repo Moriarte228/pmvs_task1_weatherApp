@@ -184,10 +184,10 @@ fi
 # executed in the while loop. It will be 0 if all commands succeeded, and
 # nonzero otherwise.
 eval "set -- $(
+        printf '%s\n' "${DEFAULT_JVM_OPTS} ${JAVA_OPTS} ${GRADLE_OPTS}" |
         xargs -n1 |
             sed ' s~[^a-zA-Z0-9/._-]~\\&~g; ' |
             tr '\n' ' '
-    )" '"$@"' <<< "${DEFAULT_JVM_OPTS} ${JAVA_OPTS} ${GRADLE_OPTS}"
-
+    )" '"$@"'
 
 exec "$JAVACMD" "$@"
