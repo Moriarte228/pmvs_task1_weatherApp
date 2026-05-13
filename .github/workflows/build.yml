@@ -14,7 +14,7 @@ concurrency:
 jobs:
   # ---------- Общие тесты на JVM ----------
   test-common:
-    name: Unit & Integration Tests (JVM)
+    name: Unit, Integration & UI Tests (JVM)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,10 +25,12 @@ jobs:
           java-version: '17'
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
+      - name: Install xvfb for headless Compose UI tests
+        run: sudo apt-get update && sudo apt-get install -y xvfb
       - name: Make gradlew executable
         run: chmod +x ./gradlew
-      - name: Run tests
-        run: ./gradlew :composeApp:desktopTest --stacktrace
+      - name: Run tests under xvfb
+        run: xvfb-run --auto-servernum --server-args='-screen 0 1280x1024x24' ./gradlew :composeApp:desktopTest --stacktrace
       - name: Upload test report
         if: always()
         uses: actions/upload-artifact@v4
