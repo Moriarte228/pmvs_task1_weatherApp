@@ -1,114 +1,113 @@
-# Weather CMP — Compose Multiplatform Weather App
+# Weather App (Compose Multiplatform)
 
-Кроссплатформенное приложение погоды на **Compose Multiplatform** (Android, iOS, Desktop/Linux, Web).  
-Основано на проекте задания 9 лабораторной работы 5.
+Кроссплатформенное приложение для отображения погоды в реальном времени.
+Поддерживаемые таргеты: **Android**, **iOS**, **Linux/Desktop (JVM)**, **Web (wasmJs)**.
 
-## Поддерживаемые платформы
+Реализовано на Compose Multiplatform на основе задания 9 лабораторной работы 5.
 
-| Платформа | Статус |
-|-----------|--------|
-| Android   | ✅ Material 3, карточки с тенями |
-| iOS       | ✅ Плоские карточки, SearchBar-стиль |
-| Linux Desktop | ✅ Минималистичный дизайн, изменяемый размер окна |
-| Web (WasmJS) | ✅ Адаптивная сетка 1/2/3 колонки |
+## Стек
+
+| Категория          | Технология                                  |
+| ------------------ | ------------------------------------------- |
+| Язык               | Kotlin 2.1.21                               |
+| UI                 | Compose Multiplatform 1.7.3 (Material 3)    |
+| HTTP-клиент        | Ktor 3.0.3 (OkHttp / Darwin / CIO / JS)     |
+| Сериализация       | kotlinx.serialization 1.7.3                 |
+| Асинхронность      | Kotlin Coroutines 1.9.0                     |
+| Кэш / Settings     | multiplatform-settings 1.2.0                |
+| Сборка             | Gradle 8.9 + AGP 8.7.3                      |
 
 ## Функциональность
 
-- **Поиск города** — TextField с иконкой поиска
-- **Текущая погода** — температура, ощущаемая, описание, эмодзи-иконка
-- **Детали** — влажность, скорость ветра, давление
-- **Кеширование** — офлайн-просмотр последних загруженных данных
-- **Несколько городов** — добавление и удаление городов
-- **Адаптивная верстка** — одно/двух/трёхколоночная сетка на Web
+- Ввод названия города и добавление в список.
+- Получение текущей погоды через **OpenWeatherMap API**.
+- Отображение: температура, ощущается, описание, иконка-эмодзи, влажность,
+  скорость ветра, давление, видимость.
+- **Кэширование** для офлайн-просмотра (SharedPreferences / NSUserDefaults /
+  Properties / localStorage в зависимости от платформы).
+- Адаптивный UI: своя верстка под каждую платформу.
 
-## Технологии
+## Адаптация UI
 
-- **Ktor** — HTTP-клиент (OkHttp на Android, Darwin на iOS, CIO на Desktop, JS на Web)
-- **kotlinx.serialization** — десериализация JSON-ответов OpenWeatherMap
-- **Coroutines + Flow** — асинхронные запросы через ViewModel
-- **Compose Multiplatform 1.7.3** — общий UI-код
-- **Material 3** — дизайн-система
+| Платформа | Особенности                                                                                       |
+| --------- | ------------------------------------------------------------------------------------------------- |
+| Android   | Material 3 карточки с тенями и скруглёнными углами, `OutlinedTextField` с иконкой поиска         |
+| iOS       | Плоские карточки без теней, `SegmentedButton` для переключения между городами, пилюля-`SearchBar` |
+| Linux     | Минималистично, чёткие границы (`border`) у элементов, изменяемое окно                            |
+| Web       | Отзывчивая сетка: 1 колонка (`<600dp`), 2 (`<1024dp`), 3 (`>=1024dp`) на основе `BoxWithConstraints` |
+
+## Запуск
+
+### Android
+```bash
+./gradlew :composeApp:installDebug
+```
+
+### Desktop (Linux)
+```bash
+./gradlew :composeApp:run
+# или сборка дистрибутива:
+./gradlew :composeApp:packageDeb
+```
+
+### Web (wasmJs)
+```bash
+./gradlew :composeApp:wasmJsBrowserDevelopmentRun
+# или production-билд:
+./gradlew :composeApp:wasmJsBrowserDistribution
+```
+
+### iOS
+Открыть `iosApp/iosApp.xcodeproj` в Xcode и запустить схему `iosApp`.
+
+## Тесты
+
+Реализованы три категории тестов:
+
+- **Unit-тесты** (`commonTest/unit`) — `WeatherEmojiTest`, `FormattingTest`.
+- **Интеграционные тесты** (`commonTest/integration`) — `WeatherApiIntegrationTest`,
+  `WeatherRepositoryIntegrationTest` с использованием Ktor MockEngine и in-memory кэша.
+- **UI-тесты виджетов** (`desktopTest/ui`) — `WeatherDetailsBlockTest` на
+  Compose UI Test API.
+
+Запуск тестов:
+```bash
+./gradlew :composeApp:desktopTest
+```
+
+## CI
+
+GitHub Actions автоматически собирает все четыре платформы при push/PR в `main`:
+
+- `test-common` — unit и integration тесты на JVM.
+- `build-android` — APK debug.
+- `build-desktop-linux` — `.deb` пакет.
+- `build-web` — wasmJs production-дистрибутив.
+- `build-ios` — сборка для iPhone-симулятора (macos-14 runner).
+
+См. [`.github/workflows/build.yml`](.github/workflows/build.yml).
+
+## API ключ
+
+В проекте используется демо-ключ OpenWeatherMap из исходной лабораторной.
+Для production стоит вынести его в `local.properties` или переменную окружения.
 
 ## Структура проекта
 
 ```
 composeApp/
-├── src/
-│   ├── commonMain/kotlin/com/example/weather/
-│   │   ├── App.kt              — общий UI (Composable)
-│   │   ├── WeatherData.kt      — модели данных + сериализация
-│   │   ├── WeatherRepository.kt — API + кеш
-│   │   ├── WeatherViewModel.kt  — бизнес-логика, StateFlow
-│   │   └── Platform.kt         — expect-объявления
-│   ├── androidMain/    — MainActivity, actual Platform
-│   ├── iosMain/        — MainViewController, actual Platform
-│   ├── desktopMain/    — main.kt (Window), actual Platform
-│   ├── wasmJsMain/     — main.kt (ComposeViewport), actual Platform
-│   └── commonTest/     — unit + integration тесты
-```
-
-## Тесты
-
-### Модульные тесты (`WeatherUnitTests.kt`) — 8 тестов
-- `testGetWeatherEmojiThunderstorm` — эмодзи для грозы
-- `testGetWeatherEmojiRain` — эмодзи для дождя
-- `testGetWeatherEmojiClear` — эмодзи для ясной погоды
-- `testGetWeatherEmojiCloudy` — эмодзи для пасмурной погоды
-- `testGetWeatherEmojiUnknown` — эмодзи для неизвестного ID
-- `testWeatherResponseToWeatherData` — маппинг API-ответа в модель
-- `testWeatherResponseEmptyWeatherList` — обработка пустого массива
-- `testGetCurrentWeatherSuccess` — успешный запрос через mock
-- `testGetCurrentWeatherCachesResult` — кеширование результата
-- `testGetCurrentWeatherNetworkError` — обработка ошибки сети
-- `testGetAllCachedCitiesEmpty` — пустой кеш
-- `testCacheKeyIsCaseInsensitive` — кеш без учёта регистра
-
-### Интеграционные тесты (`WeatherIntegrationTests.kt`) — 7 тестов
-- `testLoadWeatherUpdatesState` — загрузка обновляет кеш
-- `testSearchQueryUpdatesState` — обновление поисковой строки
-- `testClearErrorClearsState` — очистка ошибки
-- `testRemoveCityRemovesFromList` — кеш после загрузки
-- `testWeatherEmojiIntegrationWithRealId` — эмодзи из реальных данных
-- `testMultipleCitiesCached` — несколько городов в кеше
-- `testWeatherDataFieldMapping` — маппинг всех полей
-
-## Запуск через GitHub Actions (рекомендуется)
-
-1. Форкните/создайте репозиторий на GitHub
-2. Загрузите файлы проекта
-3. GitHub Actions автоматически запустит:
-   - `test` — unit + integration тесты (Ubuntu)
-   - `android` — сборка APK + тесты (Ubuntu)
-   - `desktop` — сборка JAR для Linux (Ubuntu)
-   - `web` — сборка WasmJS (Ubuntu)
-   - `ios` — сборка framework (macOS)
-4. Артефакты сборки доступны во вкладке **Actions → Artifacts**
-
-## Локальный запуск (опционально)
-
-```bash
-# Android (нужен Android SDK)
-./gradlew :composeApp:assembleDebug
-
-# Desktop
-./gradlew :composeApp:run
-
-# Web
-./gradlew :composeApp:wasmJsBrowserDevelopmentRun
-
-# Тесты
-./gradlew :composeApp:desktopTest
-```
-
-## API Key
-
-В `WeatherRepository.kt` вшит ключ из задания 9.  
-При необходимости замените на собственный ключ [OpenWeatherMap](https://openweathermap.org/api).
-
-## Подключение как submodule
-
-```bash
-# В репозитории лабораторной работы:
-git submodule add https://github.com/<your-username>/weather-cmp
-git commit -m "Add weather-cmp submodule"
+  src/
+    commonMain/kotlin/com/example/weatherapp/
+      data/       # API, кэш, репозиторий, DTO
+      domain/     # доменные модели
+      platform/   # expect-объявления для платформ
+      ui/         # Composable, тема, ViewModel
+    commonTest/   # unit + integration
+    androidMain/  # Android entry-point + actuals
+    iosMain/      # iOS entry-point + actuals
+    desktopMain/  # JVM entry-point + actuals
+    desktopTest/  # UI-тесты
+    wasmJsMain/   # Web entry-point + actuals
+iosApp/           # Xcode-проект
+.github/workflows/build.yml
 ```

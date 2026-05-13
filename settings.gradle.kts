@@ -1,9 +1,16 @@
-rootProject.name = "WeatherCMP"
+rootProject.name = "WeatherApp"
+
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
     repositories {
-        google()
+        google {
+            mavenContent {
+                includeGroupByRegex(".*android.*")
+                includeGroupByRegex(".*google.*")
+                includeGroupByRegex(".*androidx.*")
+            }
+        }
         mavenCentral()
         gradlePluginPortal()
     }
@@ -11,7 +18,13 @@ pluginManagement {
 
 dependencyResolutionManagement {
     repositories {
-        google()
+        google {
+            mavenContent {
+                includeGroupByRegex(".*android.*")
+                includeGroupByRegex(".*google.*")
+                includeGroupByRegex(".*androidx.*")
+            }
+        }
         mavenCentral()
     }
 }
