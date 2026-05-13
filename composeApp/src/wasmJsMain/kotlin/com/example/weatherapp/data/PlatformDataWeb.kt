@@ -2,8 +2,8 @@ package com.example.weatherapp.data
 
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.js.Js
-import kotlin.js.Date
+import kotlinx.datetime.Clock
 
 actual fun httpClientEngine(): HttpClientEngine = Js.create()
 
-internal actual fun nowMillis(): Long = Date().getTime().toLong()
+internal actual fun nowMillis(): Long = Clock.System.now().toEpochMilliseconds()
